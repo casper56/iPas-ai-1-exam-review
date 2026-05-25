@@ -1,0 +1,43 @@
+# 🎓 GitHub Pages 靜態網頁自動部署工作流 (V3.7 規格)
+name: Deploy iPAS AI Review System to Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master # 兼容 main 與 master 分支
+  workflow_dispatch: # 支援手動在 GitHub 網頁上點選觸發
+
+# 設定安全權限，允許部署 Pages 與寫入產物
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 限制同時間只能有一個部署工作流在執行
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code 📥
+        uses: actions/checkout@v4
+
+      - name: Setup Pages ⚙️
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact 📤
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # 上傳專案根目錄，因為 index.html 位於根目錄下
+          path: '.'
+
+      - name: Deploy to GitHub Pages 🚀
+        id: deployment
+        uses: actions/deploy-pages@v4
